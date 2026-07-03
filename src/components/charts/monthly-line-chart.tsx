@@ -1,12 +1,18 @@
 "use client";
 
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+} from "recharts";
 import { ChartTooltip } from "./chart-tooltip";
 import { formatCurrency } from "@/lib/utils";
 
 export function MonthlyLineChart({
   data,
-  height = 110,
+  height = 160,
 }: {
   data: { label: string; revenue: number }[];
   height?: number;
@@ -29,21 +35,35 @@ export function MonthlyLineChart({
   return (
     <div className="space-y-3">
       <ResponsiveContainer width="100%" height={height}>
-        <LineChart data={data} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
-          <XAxis dataKey="label" hide />
+        <AreaChart data={data} margin={{ top: 8, right: 12, left: 12, bottom: 0 }}>
+          <defs>
+            <linearGradient id="monthlyFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <XAxis
+            dataKey="label"
+            tick={{ fontSize: 10 }}
+            tickLine={false}
+            axisLine={false}
+            interval="preserveStartEnd"
+          />
           <Tooltip content={<ChartTooltip />} />
-          <Line
+          {/* Dots always on so a single-month dataset is still visible. */}
+          <Area
             type="monotone"
             dataKey="revenue"
             name="Revenue"
             stroke="hsl(var(--primary))"
             strokeWidth={2.5}
-            dot={false}
-            activeDot={{ r: 4, strokeWidth: 0 }}
+            fill="url(#monthlyFill)"
+            dot={{ r: 3.5, strokeWidth: 0, fill: "hsl(var(--primary))" }}
+            activeDot={{ r: 5, strokeWidth: 0 }}
           />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
-      <div className="grid grid-cols-3 gap-2 text-xs">
+      <div className="grid grid-cols-3 gap-2 border-t pt-3 text-xs">
         <div>
           <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
             <span className="text-emerald-400">&#8593;</span> Highest
