@@ -2,13 +2,14 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { Bell, Menu, RefreshCw, Search, X } from "lucide-react";
+import { Menu, RefreshCw, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { UserProfile } from "@/lib/types";
 import { NAV_ITEMS } from "@/lib/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationBell } from "./notification-bell";
 import { Sidebar } from "./sidebar";
 import { UserMenu } from "./user-menu";
 
@@ -127,13 +128,7 @@ export function AppShell({
               <IconButton label="Refresh" onClick={() => window.location.reload()}>
                 <RefreshCw className="h-4 w-4" />
               </IconButton>
-              <IconButton
-                label="Notifications"
-                dot
-                onClick={() => toast.info("ไม่มีการแจ้งเตือนใหม่")}
-              >
-                <Bell className="h-4 w-4" />
-              </IconButton>
+              <NotificationBell />
               <ThemeToggle />
               <UserMenu profile={profile} />
             </div>

@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import { getSalesRecords } from "@/lib/data";
 import { useSampleData } from "@/lib/env";
 import { DashboardProvider } from "@/components/providers/dashboard-provider";
+import { NotificationProvider } from "@/components/providers/notification-provider";
 import { AppShell } from "@/components/layout/app-shell";
 
 export default async function DashboardLayout({
@@ -17,9 +18,11 @@ export default async function DashboardLayout({
 
   return (
     <DashboardProvider profile={profile} records={records}>
-      <AppShell profile={profile} demoMode={useSampleData}>
-        {children}
-      </AppShell>
+      <NotificationProvider>
+        <AppShell profile={profile} demoMode={useSampleData}>
+          {children}
+        </AppShell>
+      </NotificationProvider>
     </DashboardProvider>
   );
 }

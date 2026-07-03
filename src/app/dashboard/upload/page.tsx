@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useDashboard } from "@/components/providers/dashboard-provider";
+import { useNotifications } from "@/components/providers/notification-provider";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { BrowseDeleteTable } from "@/components/dashboard/browse-delete-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,6 +95,7 @@ const DELETE_COLUMNS: { key: string; label: string }[] = [
 export default function UploadPage() {
   const router = useRouter();
   const { profile } = useDashboard();
+  const { addNotification } = useNotifications();
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const [sheets, setSheets] = React.useState<SheetData[]>([]);
@@ -242,6 +244,13 @@ export default function UploadPage() {
           ? `Validated ${totalImported} rows (demo mode — not persisted)`
           : `Imported ${totalImported} rows successfully`,
       );
+      addNotification({
+        type: "upload_success",
+        title: "นำเข้าข้อมูลสำเร็จ",
+        body: demo
+          ? `ตรวจสอบ ${totalImported} แถว (demo mode)`
+          : `นำเข้า ${totalImported} แถวเรียบร้อยแล้ว`,
+      });
       reset();
       router.refresh();
     } catch (err) {
@@ -278,6 +287,11 @@ export default function UploadPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Delete failed");
       toast.success(data.demo ? "Demo mode — no data deleted" : "Data deleted successfully");
+      addNotification({
+        type: "delete_success",
+        title: "ลบข้อมูลสำเร็จ",
+        body: data.demo ? "Demo mode — ไม่มีการลบจริง" : "ลบข้อมูลเรียบร้อยแล้ว",
+      });
       setDeleteOpen(false);
       setDeleteFrom("");
       setDeleteTo("");
@@ -343,7 +357,7 @@ export default function UploadPage() {
             </div>
             <div>
               <p className="font-medium">
-                Drag & drop your .xlsx file(s) here, or
+                Drag &amp; drop your .xlsx file(s) here, or
               </p>
               <Button
                 variant="link"
