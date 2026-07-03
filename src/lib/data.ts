@@ -61,10 +61,13 @@ export async function getSalesRecords(
   const pages = Math.ceil(total / PAGE);
 
   const requests = Array.from({ length: pages }, (_, i) => {
+    // `id` tie-breaker: date alone is non-unique, and Postgres gives no stable
+    // order for ties across separate queries — pages could skip/duplicate rows.
     let q = supabase
       .from("sales")
       .select(SALES_COLUMNS)
       .order("date", { ascending: true })
+      .order("id", { ascending: true })
       .range(i * PAGE, i * PAGE + PAGE - 1);
     if (profile.role === "salesperson" && profile.full_name) {
       q = q.eq("salesperson", profile.full_name);

@@ -20,14 +20,20 @@ const DEFAULT_MONTHLY_TARGET_PER_SALESPERSON = 500_000;
 
 // ──────────────────────────── Filtering ──────────────────────────────
 
+// Parse "YYYY-MM-DD" fields directly from the string. Going through
+// `new Date(iso)` parses as UTC midnight but reads back in local time,
+// shifting records a day earlier for viewers in UTC-negative timezones.
+const yearOf = (iso: string) => Number(iso.slice(0, 4));
+const monthOf = (iso: string) => Number(iso.slice(5, 7));
+const monthKeyOf = (iso: string) => iso.slice(0, 7); // "YYYY-MM"
+
 export function applyFilters(
   records: SalesRecord[],
   f: DashboardFilters,
 ): SalesRecord[] {
   return records.filter((r) => {
-    const d = new Date(r.date);
-    const year = d.getFullYear();
-    const month = d.getMonth() + 1;
+    const year = yearOf(r.date);
+    const month = monthOf(r.date);
 
     if (f.year != null && year !== f.year) return false;
     if (f.month != null && month !== f.month) return false;
@@ -52,9 +58,9 @@ function uniqueSorted(values: string[]): string[] {
 
 export function buildFilterOptions(records: SalesRecord[]): FilterOptions {
   return {
-    years: Array.from(
-      new Set(records.map((r) => new Date(r.date).getFullYear())),
-    ).sort((a, b) => b - a),
+    years: Array.from(new Set(records.map((r) => yearOf(r.date)))).sort(
+      (a, b) => b - a,
+    ),
     provinces: uniqueSorted(records.map((r) => r.province)),
     customers: uniqueSorted(records.map((r) => r.customer_name)),
     companies: uniqueSorted(records.map((r) => r.company_name)),
@@ -103,7 +109,7 @@ export function computeKpis(
 
   // Target = number of active salespersons × monthly target × active months.
   const activeSalespersons = distinct(records.map((r) => r.salesperson)) || 1;
-  const activeMonths = distinct(records.map((r) => monthKey(new Date(r.date)))) || 1;
+  const activeMonths = distinct(records.map((r) => monthKeyOf(r.date))) || 1;
   const revenueTarget =
     activeSalespersons * DEFAULT_MONTHLY_TARGET_PER_SALESPERSON * activeMonths;
   const targetAchievement = revenueTarget
@@ -130,7 +136,7 @@ export function computeMonthly(records: SalesRecord[]): MonthlyPoint[] {
   const buckets = new Map<string, { revenue: number; orders: Set<string> }>();
 
   for (const r of records) {
-    const key = monthKey(new Date(r.date));
+    const key = monthKeyOf(r.date);
     if (!buckets.has(key)) buckets.set(key, { revenue: 0, orders: new Set() });
     const b = buckets.get(key)!;
     b.revenue += r.sales_amount;
@@ -233,7 +239,8 @@ export function computeDaily(records: SalesRecord[]): DailySummary {
   const points: DailyPoint[] = Array.from(buckets.entries())
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, b]) => {
-      const d = new Date(date);
+      // Construct from parts so the label never shifts across timezones.
+      const d = new Date(yearOf(date), monthOf(date) - 1, Number(date.slice(8, 10)));
       return {
         date,
         label: d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
@@ -357,7 +364,7 @@ export function computeSalespersons(
     s.revenue += r.sales_amount;
     s.customers.add(r.customer_name);
     s.days.add(r.date);
-    s.months.add(monthKey(new Date(r.date)));
+    s.months.add(monthKeyOf(r.date));
   }
 
   const rows = Array.from(map.entries()).map(([name, s]) => {

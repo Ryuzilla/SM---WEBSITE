@@ -14,6 +14,8 @@ export function formatCurrency(
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
+    // "narrowSymbol" renders ฿ instead of the literal "THB" prefix.
+    currencyDisplay: "narrowSymbol",
     notation: compact ? "compact" : "standard",
     maximumFractionDigits: compact ? 1 : 0,
   }).format(value || 0);
@@ -32,7 +34,13 @@ export function formatPercent(value: number, fractionDigits = 1): string {
 }
 
 export function formatDate(iso: string): string {
-  const d = new Date(iso);
+  // Date-only strings ("YYYY-MM-DD") parse as UTC midnight but display in
+  // local time, shifting a day back in UTC-negative timezones — construct
+  // from parts so the label always matches the stored date.
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  const d = m
+    ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+    : new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleDateString("en-GB", {
     day: "2-digit",

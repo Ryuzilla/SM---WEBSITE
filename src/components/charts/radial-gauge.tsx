@@ -13,7 +13,9 @@ export function RadialGauge({
   size?: number;
   label?: string;
 }) {
-  const pct = Math.min(100, Math.max(0, value));
+  // Clamp only the arc — the label shows the real value (e.g. "128%").
+  const display = Math.max(0, value);
+  const pct = Math.min(100, display);
   const stroke = 12;
   const r = (size - stroke) / 2;
   const cx = size / 2;
@@ -27,7 +29,7 @@ export function RadialGauge({
       className="relative"
       style={{ width: size, height: size / 2 + 8 }}
       role="img"
-      aria-label={`${label ?? "Progress"}: ${pct.toFixed(0)}%`}
+      aria-label={`${label ?? "Progress"}: ${display.toFixed(0)}%`}
     >
       <svg width={size} height={size / 2 + 8} className="overflow-visible">
         <defs>
@@ -56,7 +58,7 @@ export function RadialGauge({
         />
       </svg>
       <div className="absolute inset-x-0 bottom-0 flex flex-col items-center">
-        <span className="text-xl font-bold tracking-tight">{pct.toFixed(0)}%</span>
+        <span className="text-xl font-bold tracking-tight">{display.toFixed(0)}%</span>
         {label && <span className="text-[11px] text-muted-foreground">{label}</span>}
       </div>
     </div>

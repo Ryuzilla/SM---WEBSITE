@@ -234,7 +234,11 @@ export default function UploadPage() {
           body: JSON.stringify({ rows: chunk }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? "Import failed");
+        if (!res.ok) {
+          // The failing request may still have persisted part of its rows.
+          totalImported += data.imported ?? 0;
+          throw new Error(data.error ?? "Import failed");
+        }
         totalImported += data.imported ?? 0;
         demo = demo || !!data.demo;
         setImportProgress({ done: Math.min(i + CHUNK, canonicalRows.length), total: canonicalRows.length });
@@ -254,7 +258,22 @@ export default function UploadPage() {
       reset();
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Import failed");
+      const message = err instanceof Error ? err.message : "Import failed";
+      toast.error(
+        totalImported > 0
+          ? `${message} — นำเข้าไปแล้ว ${totalImported} แถวก่อนเกิดข้อผิดพลาด`
+          : message,
+      );
+      addNotification({
+        type: "upload_error",
+        title: "นำเข้าข้อมูลไม่สำเร็จ",
+        body:
+          totalImported > 0
+            ? `${message} — นำเข้าไปแล้ว ${totalImported} แถว ตรวจสอบข้อมูลก่อนนำเข้าซ้ำ`
+            : message,
+      });
+      // Some rows are already in the DB — refresh so the dashboard reflects them.
+      if (totalImported > 0) router.refresh();
     } finally {
       setImporting(false);
       setImportProgress(null);
@@ -300,7 +319,13 @@ export default function UploadPage() {
       setConfirmDeleteAll(false);
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Delete failed");
+      const message = err instanceof Error ? err.message : "Delete failed";
+      toast.error(message);
+      addNotification({
+        type: "delete_error",
+        title: "ลบข้อมูลไม่สำเร็จ",
+        body: message,
+      });
     } finally {
       setDeleting(false);
     }
