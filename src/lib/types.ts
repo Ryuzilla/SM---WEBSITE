@@ -50,7 +50,7 @@ export const REQUIRED_COLUMNS = [
 
 export type RequiredColumn = (typeof REQUIRED_COLUMNS)[number];
 
-// ──────────────────────────── Filters ────────────────────────────
+// ──────────────────────────── Filters ────────────────────────────────
 
 export interface DashboardFilters {
   year: number | null;
@@ -92,13 +92,15 @@ export interface FilterOptions {
   salespersons: string[];
 }
 
-// ──────────────────────────── Analytics ──────────────────────────
+// ──────────────────────────── Analytics ──────────────────────────────
 
 export interface KpiSummary {
   totalRevenue: number;
   totalOrders: number;
   uniqueCustomers: number;
   uniqueCompanies: number;
+  /** Distinct products (SKUs) sold in the filtered range. */
+  uniqueProducts: number;
   averageOrderValue: number;
   monthlyGrowthRate: number; // percentage
   dailyRevenue: number; // average revenue per active day

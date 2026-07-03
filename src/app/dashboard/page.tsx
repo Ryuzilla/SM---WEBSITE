@@ -37,10 +37,14 @@ export default function OverviewPage() {
   const { analytics } = useDashboard();
   const k = analytics.kpis;
 
-  const monthlyTrend = analytics.monthly.map((m) => ({
-    label: m.label,
-    revenue: m.revenue,
-  }));
+  // Keep only actual months — computeMonthly appends future forecast points
+  // (revenue 0) that would drag the line and the Lowest stat down to zero.
+  const monthlyTrend = analytics.monthly
+    .filter((m) => m.orders > 0)
+    .map((m) => ({
+      label: m.label,
+      revenue: m.revenue,
+    }));
 
   const topCompanies = analytics.companies
     .slice(0, 10)
@@ -48,7 +52,8 @@ export default function OverviewPage() {
 
   const salespersons = analytics.salespersons;
   const topSales = salespersons.slice(0, 9);
-  const totalSKU = analytics.products.length;
+  // analytics.products is capped at top 10 — use the true distinct count.
+  const totalSKU = k.uniqueProducts;
 
   return (
     <div className="space-y-4">

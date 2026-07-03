@@ -18,7 +18,7 @@ import { MONTH_NAMES, quarterOfMonth } from "./utils";
 // exist. In production these come from the `targets` table.
 const DEFAULT_MONTHLY_TARGET_PER_SALESPERSON = 500_000;
 
-// ──────────────────────────── Filtering ──────────────────────────
+// ──────────────────────────── Filtering ──────────────────────────────
 
 export function applyFilters(
   records: SalesRecord[],
@@ -64,7 +64,7 @@ export function buildFilterOptions(records: SalesRecord[]): FilterOptions {
   };
 }
 
-// ──────────────────────────── Helpers ────────────────────────────
+// ──────────────────────────── Helpers ────────────────────────────────
 
 const monthKey = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -78,7 +78,7 @@ function distinct<T>(arr: T[]): number {
   return new Set(arr).size;
 }
 
-// ──────────────────────────── KPIs ───────────────────────────────
+// ──────────────────────────── KPIs ───────────────────────────────────
 
 export function computeKpis(
   records: SalesRecord[],
@@ -88,6 +88,9 @@ export function computeKpis(
   const totalOrders = distinct(records.map((r) => r.invoice_no));
   const uniqueCustomers = distinct(records.map((r) => r.customer_name));
   const uniqueCompanies = distinct(records.map((r) => r.company_name));
+  const uniqueProducts = distinct(
+    records.map((r) => r.product_code || r.product_name),
+  );
   const averageOrderValue = totalOrders ? totalRevenue / totalOrders : 0;
 
   const activeDays = distinct(records.map((r) => r.date));
@@ -112,6 +115,7 @@ export function computeKpis(
     totalOrders,
     uniqueCustomers,
     uniqueCompanies,
+    uniqueProducts,
     averageOrderValue,
     monthlyGrowthRate,
     dailyRevenue,
@@ -120,7 +124,7 @@ export function computeKpis(
   };
 }
 
-// ──────────────────────────── Monthly trend ──────────────────────
+// ──────────────────────────── Monthly trend ──────────────────────────
 
 export function computeMonthly(records: SalesRecord[]): MonthlyPoint[] {
   const buckets = new Map<string, { revenue: number; orders: Set<string> }>();
@@ -209,7 +213,7 @@ function appendForecast(points: MonthlyPoint[], horizon = 3): MonthlyPoint[] {
   return out;
 }
 
-// ──────────────────────────── Daily ──────────────────────────────
+// ──────────────────────────── Daily ──────────────────────────────────
 
 export function computeDaily(records: SalesRecord[]): DailySummary {
   const buckets = new Map<string, { revenue: number; orders: Set<string> }>();
@@ -253,7 +257,7 @@ export function computeDaily(records: SalesRecord[]): DailySummary {
   return { points, bestDay, worstDay, averageDailyRevenue };
 }
 
-// ──────────────────────────── Rankings ───────────────────────────
+// ──────────────────────────── Rankings ───────────────────────────────
 
 export function computeProducts(records: SalesRecord[], limit = 10): ProductRank[] {
   const total = records.reduce((s, r) => s + r.sales_amount, 0) || 1;
@@ -392,7 +396,7 @@ export function computeSalespersons(
   return rows;
 }
 
-// ──────────────────────────── Orchestrator ───────────────────────
+// ──────────────────────────── Orchestrator ───────────────────────────
 
 /**
  * Compute the full analytics bundle. `allRecords` is used to build the
