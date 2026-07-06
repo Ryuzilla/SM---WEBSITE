@@ -43,7 +43,7 @@ export const TARGET_FIELDS: TargetField[] = [
     key: "Company_Name",
     label: "Company Name",
     required: false,
-    hint: "Falls back to Customer Name if unmapped.",
+    hint: "Auto-resolved from STKcode2 via the Companies master sheet when present; otherwise falls back to Customer Name.",
     aliases: ["companyname", "บริษัท", "ชื่อบริษัท"],
   },
   {

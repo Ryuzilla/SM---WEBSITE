@@ -220,11 +220,16 @@ export function enrichRows(
     }
 
     // Resolve brand code (STKcode2, carried as __brandCode) → Companies name.
-    // Always overrides Category so the readable brand name replaces the raw code.
+    // The resolved name becomes Company_Name (the "Top Company" dimension on
+    // the dashboard) and also overrides Category, replacing the raw code.
+    // Without this, Company_Name falls back to the customer name on import.
     const brandCode = String(row["__brandCode"] ?? "").trim();
     if (brandCode && lookups.brands) {
       const brandName = lookups.brands.get(brandCode);
-      if (brandName) out["Category"] = brandName;
+      if (brandName) {
+        out["Company_Name"] = brandName;
+        out["Category"] = brandName;
+      }
     }
     delete out["__brandCode"];
 
