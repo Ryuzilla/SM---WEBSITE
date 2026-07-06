@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Package, Receipt, Users } from "lucide-react";
+import { CalendarDays, Package, Store } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -74,7 +74,7 @@ export default function OverviewPage() {
       <FilterBar />
 
       {/* ── KPI row ── */}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {/* Revenue hero + target gauge */}
         <Card className="sm:col-span-2 xl:col-span-1">
           <CardContent className="flex items-center justify-between gap-4 p-5">
@@ -100,16 +100,10 @@ export default function OverviewPage() {
           icon={Package}
         />
         <StatCard
-          label="Total Orders"
-          value={formatNumber(k.totalOrders)}
-          sub="invoices"
-          icon={Receipt}
-        />
-        <StatCard
-          label="Customers"
+          label="ร้านค้า"
           value={formatNumber(k.uniqueCustomers)}
-          sub="unique buyers"
-          icon={Users}
+          sub="ร้านค้าไม่ซ้ำ"
+          icon={Store}
         />
       </div>
 
