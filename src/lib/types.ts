@@ -92,7 +92,7 @@ export interface FilterOptions {
   salespersons: string[];
 }
 
-// ──────────────────────────── Analytics ──────────────────────────────
+// ──────────────────────────── Analytics ───────────────────────────────
 
 export interface KpiSummary {
   totalRevenue: number;
@@ -166,7 +166,8 @@ export interface SalespersonPerformance {
   totalRevenue: number;
   target: number;
   targetAchievement: number; // percentage
-  customersManaged: number;
+  customersManaged: number; // distinct stores/customers bought from
+  skusSold: number; // distinct products (SKUs) sold
   performanceScore: number; // 0-100 composite score
   isTopPerformer: boolean;
 }

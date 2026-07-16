@@ -219,7 +219,7 @@ function appendForecast(points: MonthlyPoint[], horizon = 3): MonthlyPoint[] {
   return out;
 }
 
-// ──────────────────────────── Daily ──────────────────────────────────
+// ──────────────────────────── Daily ───────────────────────────────────
 
 export function computeDaily(records: SalesRecord[]): DailySummary {
   const buckets = new Map<string, { revenue: number; orders: Set<string> }>();
@@ -264,7 +264,7 @@ export function computeDaily(records: SalesRecord[]): DailySummary {
   return { points, bestDay, worstDay, averageDailyRevenue };
 }
 
-// ──────────────────────────── Rankings ───────────────────────────────
+// ──────────────────────────── Rankings ────────────────────────────────
 
 export function computeProducts(records: SalesRecord[], limit = 10): ProductRank[] {
   const total = records.reduce((s, r) => s + r.sales_amount, 0) || 1;
@@ -348,6 +348,7 @@ export function computeSalespersons(
     {
       revenue: number;
       customers: Set<string>;
+      products: Set<string>;
       days: Set<string>;
       months: Set<string>;
     }
@@ -357,12 +358,14 @@ export function computeSalespersons(
       map.set(r.salesperson, {
         revenue: 0,
         customers: new Set(),
+        products: new Set(),
         days: new Set(),
         months: new Set(),
       });
     const s = map.get(r.salesperson)!;
     s.revenue += r.sales_amount;
     s.customers.add(r.customer_name);
+    s.products.add(r.product_code || r.product_name);
     s.days.add(r.date);
     s.months.add(monthKeyOf(r.date));
   }
@@ -380,6 +383,7 @@ export function computeSalespersons(
       target,
       targetAchievement: Number(targetAchievement.toFixed(1)),
       customersManaged: s.customers.size,
+      skusSold: s.products.size,
       performanceScore: 0,
       isTopPerformer: false,
     };

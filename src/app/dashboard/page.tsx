@@ -244,23 +244,24 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
 
-        {/* Salesperson summary table (revenue + customers merged) */}
+        {/* Per-salesperson summary: revenue, unique SKUs, unique stores */}
         <Card className="lg:col-span-2 xl:col-span-1">
           <CardHeader className="px-5 pt-5 pb-1">
             <CardTitle className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Salesperson Summary
             </CardTitle>
-            <div className="grid grid-cols-[1fr_auto_auto] gap-3 pt-2 text-[10px] uppercase tracking-wide text-muted-foreground/60">
+            <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 pt-2 text-[10px] uppercase tracking-wide text-muted-foreground/60">
               <span>Sales</span>
               <span className="w-16 text-right">Revenue</span>
-              <span className="w-14 text-right">Cust.</span>
+              <span className="w-12 text-right">SKU</span>
+              <span className="w-12 text-right">ร้านค้า</span>
             </div>
           </CardHeader>
           <CardContent className="max-h-[240px] overflow-y-auto px-5 pb-4 scrollbar-thin">
             {salespersons.map((s, i) => (
               <div
                 key={s.name}
-                className={`grid grid-cols-[1fr_auto_auto] items-center gap-3 py-1.5 text-xs${
+                className={`grid grid-cols-[1fr_auto_auto_auto] items-center gap-3 py-1.5 text-xs${
                   i > 0 ? " border-t border-border/40" : ""
                 }`}
               >
@@ -268,7 +269,10 @@ export default function OverviewPage() {
                 <span className="w-16 text-right tabular-nums">
                   {formatCurrency(s.totalRevenue, { compact: true })}
                 </span>
-                <span className="w-14 text-right tabular-nums text-muted-foreground">
+                <span className="w-12 text-right tabular-nums text-muted-foreground">
+                  {formatNumber(s.skusSold)}
+                </span>
+                <span className="w-12 text-right tabular-nums text-muted-foreground">
                   {formatNumber(s.customersManaged)}
                 </span>
               </div>
