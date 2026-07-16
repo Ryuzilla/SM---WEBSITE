@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useFormStatus } from "react-dom";
-import { Loader2, Lock, Mail, User } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
 import { signIn, signUp, type AuthState } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import { toast } from "sonner";
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" className="w-full" disabled={pending}>
+    <Button type="submit" className="w-full glow-primary" disabled={pending}>
       {pending && <Loader2 className="h-4 w-4 animate-spin" />}
       {label}
     </Button>
@@ -42,9 +42,6 @@ export function LoginForm({
 
   React.useEffect(() => {
     if (signUpState.error) toast.error(signUpState.error);
-    else if (signUpState.error === undefined && signUpState !== null) {
-      // no-op; success handled below via hint
-    }
   }, [signUpState]);
 
   return (
@@ -55,7 +52,7 @@ export function LoginForm({
       </TabsList>
 
       <TabsContent value="signin">
-        <form action={signInAction} className="space-y-4 pt-2">
+        <form action={signInAction} className="space-y-4 pt-4">
           <input type="hidden" name="redirect" value={redirectTo} />
           <Field
             icon={<Mail className="h-4 w-4" />}
@@ -65,30 +62,36 @@ export function LoginForm({
             label="Email"
             placeholder="you@company.com"
             defaultValue={demoMode ? "demo@sm-analytics.app" : ""}
+            autoComplete="email"
             required
           />
-          <Field
-            icon={<Lock className="h-4 w-4" />}
+          <PasswordField
             id="password"
             name="password"
-            type="password"
             label="Password"
-            placeholder="••••••••"
             defaultValue={demoMode ? "demo" : ""}
+            autoComplete="current-password"
             required={!demoMode}
           />
+          {demoMode && (
+            <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+              Demo credentials are pre-filled — just press{" "}
+              <span className="font-medium text-foreground">Enter Demo</span>.
+            </p>
+          )}
           <SubmitButton label={demoMode ? "Enter Demo" : "Sign In"} />
         </form>
       </TabsContent>
 
       <TabsContent value="signup">
-        <form action={signUpAction} className="space-y-4 pt-2">
+        <form action={signUpAction} className="space-y-4 pt-4">
           <Field
             icon={<User className="h-4 w-4" />}
             id="fullName"
             name="fullName"
             label="Full name"
             placeholder="Jane Executive"
+            autoComplete="name"
             required
           />
           <Field
@@ -98,21 +101,22 @@ export function LoginForm({
             type="email"
             label="Email"
             placeholder="you@company.com"
+            autoComplete="email"
             required
           />
-          <Field
-            icon={<Lock className="h-4 w-4" />}
+          <PasswordField
             id="su-password"
             name="password"
-            type="password"
             label="Password"
             placeholder="At least 6 characters"
+            autoComplete="new-password"
             required
           />
           <SubmitButton label="Create account" />
           <p className="text-center text-xs text-muted-foreground">
             New accounts are provisioned with the{" "}
-            <span className="font-medium">Salesperson</span> role by default.
+            <span className="font-medium text-foreground">Salesperson</span> role
+            by default.
           </p>
         </form>
       </TabsContent>
@@ -138,6 +142,42 @@ function Field({
           {icon}
         </span>
         <Input id={id} className="pl-9" {...props} />
+      </div>
+    </div>
+  );
+}
+
+function PasswordField({
+  label,
+  id,
+  ...props
+}: {
+  label: string;
+  id: string;
+} & React.ComponentProps<"input">) {
+  const [show, setShow] = React.useState(false);
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+          <Lock className="h-4 w-4" />
+        </span>
+        <Input
+          id={id}
+          type={show ? "text" : "password"}
+          placeholder={props.placeholder ?? "••••••••"}
+          className="px-9"
+          {...props}
+        />
+        <button
+          type="button"
+          onClick={() => setShow((v) => !v)}
+          aria-label={show ? "Hide password" : "Show password"}
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
       </div>
     </div>
   );

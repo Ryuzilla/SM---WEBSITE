@@ -137,4 +137,13 @@
   .glow-primary {
     box-shadow: 0 0 20px -4px hsl(var(--primary) / 0.5);
   }
+
+  /* Login brand panel — pure black with the editorial grid overlay. */
+  .login-hero {
+    background-color: hsl(0 0% 4%);
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 46px 46px;
+  }
 }
