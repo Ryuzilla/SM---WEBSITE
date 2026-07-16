@@ -1,10 +1,9 @@
 "use client";
 
-import { CalendarDays, Package, Store } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, CalendarDays, Package, Store } from "lucide-react";
 import {
   Bar,
   BarChart,
-  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -18,19 +17,21 @@ import { MonthlyLineChart } from "@/components/charts/monthly-line-chart";
 import { ChartTooltip } from "@/components/charts/chart-tooltip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency, formatNumber } from "@/lib/utils";
+import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 
-const PALETTE = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
-  "hsl(220 70% 70%)",
-  "hsl(160 60% 55%)",
-  "hsl(38 80% 60%)",
-  "hsl(280 70% 65%)",
-  "hsl(10 80% 60%)",
+// Cohesive cool→warm categorical ramp for the one true categorical use
+// (the company donut). Ordered so adjacent slices stay distinguishable.
+const CATEGORICAL = [
+  "hsl(220 85% 60%)", // navy (primary)
+  "hsl(199 89% 55%)", // sky
+  "hsl(172 66% 48%)", // teal
+  "hsl(158 70% 45%)", // emerald
+  "hsl(250 72% 66%)", // indigo
+  "hsl(280 65% 66%)", // violet
+  "hsl(322 62% 62%)", // magenta
+  "hsl(38 92% 58%)", // amber
+  "hsl(16 85% 62%)", // coral
+  "hsl(220 12% 55%)", // slate
 ];
 
 export default function OverviewPage() {
@@ -41,29 +42,29 @@ export default function OverviewPage() {
   // (revenue 0) that would drag the line and the Lowest stat down to zero.
   const monthlyTrend = analytics.monthly
     .filter((m) => m.orders > 0)
-    .map((m) => ({
-      label: m.label,
-      revenue: m.revenue,
-    }));
+    .map((m) => ({ label: m.label, revenue: m.revenue }));
 
   const topCompanies = analytics.companies
     .slice(0, 10)
-    .map((c, i) => ({ ...c, color: PALETTE[i] }));
+    .map((c, i) => ({ ...c, color: CATEGORICAL[i] }));
   const companiesTotal = topCompanies.reduce((s, c) => s + c.revenue, 0);
 
   const salespersons = analytics.salespersons;
   const topSales = salespersons.slice(0, 8);
   const maxSalesRevenue = Math.max(1, ...topSales.map((s) => s.totalRevenue));
+  const growth = k.monthlyGrowthRate;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Heading */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Supamit Store &middot; Sales Dashboard
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/80">
+            Supamit Store
           </p>
-          <h1 className="font-display text-3xl font-bold tracking-tight">Overview</h1>
+          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">
+            Sales Overview
+          </h1>
         </div>
         <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-xs">
           <CalendarDays className="h-3.5 w-3.5" />
@@ -74,65 +75,72 @@ export default function OverviewPage() {
       <FilterBar />
 
       {/* ── KPI row ── */}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {/* Revenue hero + target gauge */}
-        <Card className="sm:col-span-2 xl:col-span-1">
-          <CardContent className="flex items-center justify-between gap-4 p-5">
+        <Card className="surface relative overflow-hidden sm:col-span-2 xl:col-span-1">
+          <span className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary to-transparent" />
+          <CardContent className="flex items-center justify-between gap-4 p-6">
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Total Revenue
               </p>
-              <p className="mt-1 truncate text-3xl font-bold tracking-tight tabular-nums">
+              <p className="mt-2 truncate font-display text-[2.5rem] font-bold leading-none tracking-tight tabular-nums">
                 {formatCurrency(k.totalRevenue, { compact: true })}
               </p>
-              <p className="mt-1 text-[11px] text-muted-foreground">
-                Target {formatCurrency(k.revenueTarget, { compact: true })}
-              </p>
+              <div className="mt-3 flex items-center gap-2 text-[11px]">
+                {growth !== 0 && (
+                  <span
+                    className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-semibold ${
+                      growth > 0
+                        ? "bg-emerald-500/10 text-emerald-400"
+                        : "bg-red-500/10 text-red-400"
+                    }`}
+                  >
+                    {growth > 0 ? (
+                      <ArrowUpRight className="h-3 w-3" />
+                    ) : (
+                      <ArrowDownRight className="h-3 w-3" />
+                    )}
+                    {formatPercent(growth)}
+                  </span>
+                )}
+                <span className="text-muted-foreground">
+                  Target {formatCurrency(k.revenueTarget, { compact: true })}
+                </span>
+              </div>
             </div>
-            <RadialGauge value={k.targetAchievement} size={88} label="of target" />
+            <RadialGauge value={k.targetAchievement} size={92} label="of target" />
           </CardContent>
         </Card>
 
         <StatCard
           label="Total SKU"
           value={formatNumber(k.uniqueProducts)}
-          sub="products sold"
+          sub="สินค้าไม่ซ้ำที่ขายได้"
           icon={Package}
         />
         <StatCard
           label="ร้านค้า"
           value={formatNumber(k.uniqueCustomers)}
-          sub="ร้านค้าไม่ซ้ำ"
+          sub="ร้านค้าที่ซื้อไม่ซ้ำ"
           icon={Store}
         />
       </div>
 
       {/* ── Earnings + top salespeople ── */}
-      <div className="grid gap-3 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
-          <CardHeader className="px-5 pt-5 pb-2">
-            <CardTitle className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Total Earning by Months
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-5 pb-5">
-            <MonthlyLineChart data={monthlyTrend} height={200} />
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 xl:grid-cols-3">
+        <Section title="Monthly Earnings" className="xl:col-span-2">
+          <MonthlyLineChart data={monthlyTrend} height={210} />
+        </Section>
 
-        {/* Ranked salespeople with proportion bars */}
-        <Card>
-          <CardHeader className="px-5 pt-5 pb-2">
-            <CardTitle className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Top Sales Revenue
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 px-5 pb-5">
+        {/* Ranked salespeople with proportion bars — single hue (magnitude) */}
+        <Section title="Top Sales Revenue">
+          <div className="space-y-3.5">
             {topSales.map((s, i) => (
               <div key={s.name}>
                 <div className="flex items-baseline justify-between gap-2 text-xs">
                   <span className="flex min-w-0 items-baseline gap-2">
-                    <span className="shrink-0 font-mono text-[10px] text-muted-foreground/60">
+                    <span className="shrink-0 font-mono text-[10px] text-muted-foreground/50">
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <span className="truncate font-medium">{s.name}</span>
@@ -143,11 +151,8 @@ export default function OverviewPage() {
                 </div>
                 <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
                   <div
-                    className="h-full rounded-full transition-[width] duration-700"
-                    style={{
-                      width: `${(s.totalRevenue / maxSalesRevenue) * 100}%`,
-                      background: PALETTE[i % PALETTE.length],
-                    }}
+                    className="h-full rounded-full bg-primary transition-[width] duration-700"
+                    style={{ width: `${(s.totalRevenue / maxSalesRevenue) * 100}%` }}
                   />
                 </div>
               </div>
@@ -155,20 +160,15 @@ export default function OverviewPage() {
             {topSales.length === 0 && (
               <p className="py-6 text-center text-xs text-muted-foreground">No data</p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </Section>
       </div>
 
       {/* ── Companies + salesperson detail ── */}
-      <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
-        {/* Top companies donut */}
-        <Card>
-          <CardHeader className="px-5 pt-5 pb-2">
-            <CardTitle className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Top 10 Company &middot; Sales
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4 px-5 pb-5 sm:flex-row">
+      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        {/* Top companies donut — the one categorical chart */}
+        <Section title="Top 10 Companies">
+          <div className="flex flex-col items-center gap-5 sm:flex-row">
             <div className="shrink-0">
               <DonutChart
                 segments={topCompanies.map((c) => ({
@@ -178,25 +178,27 @@ export default function OverviewPage() {
                 }))}
                 centerValue={formatCurrency(companiesTotal, { compact: true })}
                 centerLabel="Total"
-                size={150}
-                thickness={16}
+                size={156}
+                thickness={17}
               />
             </div>
-            <div className="max-h-[190px] w-full flex-1 space-y-1 overflow-y-auto scrollbar-thin">
+            <div className="max-h-[196px] w-full flex-1 space-y-1.5 overflow-y-auto scrollbar-thin">
               {topCompanies.map((c) => (
                 <div
                   key={c.companyName}
                   className="flex items-center justify-between gap-2 text-xs"
                 >
-                  <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="flex min-w-0 items-center gap-2">
                     <span
-                      className="h-2 w-2 shrink-0 rounded-full"
+                      className="h-2.5 w-2.5 shrink-0 rounded-sm"
                       style={{ background: c.color }}
                     />
                     <span className="truncate font-medium">{c.companyName}</span>
                   </span>
                   <span className="shrink-0 tabular-nums text-muted-foreground">
-                    {formatCurrency(c.revenue, { compact: true })}
+                    {companiesTotal
+                      ? `${Math.round((c.revenue / companiesTotal) * 100)}%`
+                      : "0%"}
                   </span>
                 </div>
               ))}
@@ -204,69 +206,67 @@ export default function OverviewPage() {
                 <p className="text-xs text-muted-foreground">No data</p>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </Section>
 
-        {/* Sales by person bar chart */}
-        <Card>
-          <CardHeader className="px-5 pt-5 pb-2">
-            <CardTitle className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Sales by Person
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-2 pb-4">
-            <ResponsiveContainer width="100%" height={230}>
-              <BarChart
-                data={topSales.map((s) => ({
-                  name: s.name.split(" ")[0],
-                  revenue: s.totalRevenue,
-                }))}
-                margin={{ left: 0, right: 8, top: 8, bottom: 36 }}
-              >
-                <XAxis
-                  dataKey="name"
-                  tick={{ fontSize: 9 }}
-                  angle={-35}
-                  textAnchor="end"
-                  interval={0}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis hide />
-                <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--muted) / 0.4)" }} />
-                <Bar dataKey="revenue" name="Revenue" radius={[4, 4, 0, 0]} maxBarSize={36}>
-                  {topSales.map((_, i) => (
-                    <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {/* Sales by person — single hue (magnitude comparison) */}
+        <Section title="Sales by Person">
+          <ResponsiveContainer width="100%" height={228}>
+            <BarChart
+              data={topSales.map((s) => ({
+                name: s.name.split(" ")[0],
+                revenue: s.totalRevenue,
+              }))}
+              margin={{ left: 0, right: 8, top: 8, bottom: 34 }}
+            >
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 9 }}
+                angle={-35}
+                textAnchor="end"
+                interval={0}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis hide />
+              <Tooltip
+                content={<ChartTooltip />}
+                cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
+              />
+              <Bar
+                dataKey="revenue"
+                name="Revenue"
+                fill="hsl(var(--primary))"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={34}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </Section>
 
         {/* Per-salesperson summary: revenue, unique SKUs, unique stores */}
-        <Card className="lg:col-span-2 xl:col-span-1">
+        <Card className="surface lg:col-span-2 xl:col-span-1">
           <CardHeader className="px-5 pt-5 pb-1">
-            <CardTitle className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <CardTitle className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Salesperson Summary
             </CardTitle>
-            <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 pt-2 text-[10px] uppercase tracking-wide text-muted-foreground/60">
+            <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 pt-2 text-[10px] uppercase tracking-wide text-muted-foreground/50">
               <span>Sales</span>
               <span className="w-16 text-right">Revenue</span>
               <span className="w-12 text-right">SKU</span>
               <span className="w-12 text-right">ร้านค้า</span>
             </div>
           </CardHeader>
-          <CardContent className="max-h-[240px] overflow-y-auto px-5 pb-4 scrollbar-thin">
+          <CardContent className="max-h-[248px] overflow-y-auto px-5 pb-4 scrollbar-thin">
             {salespersons.map((s, i) => (
               <div
                 key={s.name}
-                className={`grid grid-cols-[1fr_auto_auto_auto] items-center gap-3 py-1.5 text-xs${
+                className={`grid grid-cols-[1fr_auto_auto_auto] items-center gap-3 py-2 text-xs${
                   i > 0 ? " border-t border-border/40" : ""
                 }`}
               >
                 <span className="truncate font-medium">{s.name}</span>
-                <span className="w-16 text-right tabular-nums">
+                <span className="w-16 text-right font-semibold tabular-nums">
                   {formatCurrency(s.totalRevenue, { compact: true })}
                 </span>
                 <span className="w-12 text-right tabular-nums text-muted-foreground">
@@ -287,6 +287,28 @@ export default function OverviewPage() {
   );
 }
 
+/** Card wrapper with a consistent titled header. */
+function Section({
+  title,
+  className,
+  children,
+}: {
+  title: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card className={`surface ${className ?? ""}`}>
+      <CardHeader className="px-5 pt-5 pb-3">
+        <CardTitle className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-5 pb-5">{children}</CardContent>
+    </Card>
+  );
+}
+
 function StatCard({
   label,
   value,
@@ -299,18 +321,18 @@ function StatCard({
   icon: React.ElementType;
 }) {
   return (
-    <Card>
-      <CardContent className="flex items-center justify-between gap-3 p-5">
+    <Card className="surface">
+      <CardContent className="flex items-center justify-between gap-3 p-6">
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             {label}
           </p>
-          <p className="mt-1 truncate text-3xl font-bold tracking-tight tabular-nums">
+          <p className="mt-2 truncate font-display text-[2.5rem] font-bold leading-none tracking-tight tabular-nums">
             {value}
           </p>
-          <p className="mt-1 text-[11px] text-muted-foreground">{sub}</p>
+          <p className="mt-3 text-[11px] text-muted-foreground">{sub}</p>
         </div>
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+        <div className="glow-primary flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
           <Icon className="h-5 w-5 text-primary" />
         </div>
       </CardContent>
