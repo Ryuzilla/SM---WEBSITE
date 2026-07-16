@@ -107,6 +107,7 @@ export default function UploadPage() {
   const [dragOver, setDragOver] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
+  const [deleteProgress, setDeleteProgress] = React.useState(0);
   const [deleteFrom, setDeleteFrom] = React.useState("");
   const [deleteTo, setDeleteTo] = React.useState("");
   const [deleteColumn, setDeleteColumn] = React.useState("");
@@ -289,6 +290,7 @@ export default function UploadPage() {
       return;
     }
     setDeleting(true);
+    setDeleteProgress(0);
     try {
       const body: Record<string, string | boolean> = {};
       if (deleteFrom) body.dateFrom = deleteFrom;
@@ -298,18 +300,39 @@ export default function UploadPage() {
         body.value = deleteValue;
       }
       if (!hasDeleteFilter) body.deleteAll = true;
-      const res = await fetch("/api/sales/delete", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Delete failed");
-      toast.success(data.demo ? "Demo mode — no data deleted" : "Data deleted successfully");
+
+      // The server deletes in batches within a time budget and reports
+      // `done: false` when more rows remain — keep calling until it's done.
+      let totalDeleted = 0;
+      let demo = false;
+      let done = false;
+      let guard = 0;
+      while (!done && guard < 10_000) {
+        guard++;
+        const res = await fetch("/api/sales/delete", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Delete failed");
+        totalDeleted += data.count ?? 0;
+        demo = demo || !!data.demo;
+        done = data.done !== false;
+        setDeleteProgress(totalDeleted);
+      }
+
+      toast.success(
+        demo
+          ? "Demo mode — no data deleted"
+          : `ลบข้อมูลสำเร็จ ${totalDeleted.toLocaleString()} แถว`,
+      );
       addNotification({
         type: "delete_success",
         title: "ลบข้อมูลสำเร็จ",
-        body: data.demo ? "Demo mode — ไม่มีการลบจริง" : "ลบข้อมูลเรียบร้อยแล้ว",
+        body: demo
+          ? "Demo mode — ไม่มีการลบจริง"
+          : `ลบข้อมูล ${totalDeleted.toLocaleString()} แถวเรียบร้อยแล้ว`,
       });
       setDeleteOpen(false);
       setDeleteFrom("");
@@ -328,6 +351,7 @@ export default function UploadPage() {
       });
     } finally {
       setDeleting(false);
+      setDeleteProgress(0);
     }
   }
 
@@ -804,7 +828,11 @@ export default function UploadPage() {
                   disabled={deleting || (!hasDeleteFilter && !confirmDeleteAll)}
                 >
                   {deleting && <Loader2 className="h-4 w-4 animate-spin" />}
-                  ยืนยันลบ
+                  {deleting
+                    ? deleteProgress > 0
+                      ? `กำลังลบ… ${deleteProgress.toLocaleString()} แถว`
+                      : "กำลังลบ…"
+                    : "ยืนยันลบ"}
                 </Button>
               </DialogFooter>
             </DialogContent>
