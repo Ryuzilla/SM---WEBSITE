@@ -22,7 +22,7 @@ import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 // Cohesive cool→warm categorical ramp for the one true categorical use
 // (the company donut). Ordered so adjacent slices stay distinguishable.
 const CATEGORICAL = [
-  "hsl(220 85% 60%)", // navy (primary)
+  "hsl(220 85% 62%)", // navy (primary)
   "hsl(199 89% 55%)", // sky
   "hsl(172 66% 48%)", // teal
   "hsl(158 70% 45%)", // emerald
@@ -59,11 +59,9 @@ export default function OverviewPage() {
       {/* Heading */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/80">
-            Supamit Store
-          </p>
-          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">
-            Sales Overview
+          <p className="text-sm font-medium text-muted-foreground">Supamit Store</p>
+          <h1 className="mt-0.5 font-display text-3xl font-bold tracking-tight">
+            Sales overview
           </h1>
         </div>
         <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-xs">
@@ -81,10 +79,8 @@ export default function OverviewPage() {
           <span className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary to-transparent" />
           <CardContent className="flex items-center justify-between gap-4 p-6">
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Total Revenue
-              </p>
-              <p className="mt-2 truncate font-display text-[2.5rem] font-bold leading-none tracking-tight tabular-nums">
+              <p className="text-xs font-medium text-muted-foreground">Total revenue</p>
+              <p className="mt-2 truncate font-display text-[2.6rem] font-bold leading-none tracking-tight tabular-nums">
                 {formatCurrency(k.totalRevenue, { compact: true })}
               </p>
               <div className="mt-3 flex items-center gap-2 text-[11px]">
@@ -129,12 +125,12 @@ export default function OverviewPage() {
 
       {/* ── Earnings + top salespeople ── */}
       <div className="grid gap-4 xl:grid-cols-3">
-        <Section title="Monthly Earnings" className="xl:col-span-2">
+        <Section title="Monthly earnings" className="xl:col-span-2">
           <MonthlyLineChart data={monthlyTrend} height={210} />
         </Section>
 
         {/* Ranked salespeople with proportion bars — single hue (magnitude) */}
-        <Section title="Top Sales Revenue">
+        <Section title="Top sales revenue">
           <div className="space-y-3.5">
             {topSales.map((s, i) => (
               <div key={s.name}>
@@ -167,7 +163,7 @@ export default function OverviewPage() {
       {/* ── Companies + salesperson detail ── */}
       <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
         {/* Top companies donut — the one categorical chart */}
-        <Section title="Top 10 Companies">
+        <Section title="Top 10 companies">
           <div className="flex flex-col items-center gap-5 sm:flex-row">
             <div className="shrink-0">
               <DonutChart
@@ -210,7 +206,7 @@ export default function OverviewPage() {
         </Section>
 
         {/* Sales by person — single hue (magnitude comparison) */}
-        <Section title="Sales by Person">
+        <Section title="Sales by person">
           <ResponsiveContainer width="100%" height={228}>
             <BarChart
               data={topSales.map((s) => ({
@@ -247,10 +243,10 @@ export default function OverviewPage() {
         {/* Per-salesperson summary: revenue, unique SKUs, unique stores */}
         <Card className="surface lg:col-span-2 xl:col-span-1">
           <CardHeader className="px-5 pt-5 pb-1">
-            <CardTitle className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Salesperson Summary
+            <CardTitle className="text-[13px] font-semibold tracking-tight">
+              Salesperson summary
             </CardTitle>
-            <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 pt-2 text-[10px] uppercase tracking-wide text-muted-foreground/50">
+            <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 pt-2 text-[11px] text-muted-foreground/70">
               <span>Sales</span>
               <span className="w-16 text-right">Revenue</span>
               <span className="w-12 text-right">SKU</span>
@@ -287,7 +283,7 @@ export default function OverviewPage() {
   );
 }
 
-/** Card wrapper with a consistent titled header. */
+/** Card wrapper with a consistent titled header (sentence-case, quiet). */
 function Section({
   title,
   className,
@@ -300,7 +296,7 @@ function Section({
   return (
     <Card className={`surface ${className ?? ""}`}>
       <CardHeader className="px-5 pt-5 pb-3">
-        <CardTitle className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <CardTitle className="text-[13px] font-semibold tracking-tight">
           {title}
         </CardTitle>
       </CardHeader>
@@ -324,10 +320,8 @@ function StatCard({
     <Card className="surface">
       <CardContent className="flex items-center justify-between gap-3 p-6">
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {label}
-          </p>
-          <p className="mt-2 truncate font-display text-[2.5rem] font-bold leading-none tracking-tight tabular-nums">
+          <p className="text-xs font-medium text-muted-foreground">{label}</p>
+          <p className="mt-2 truncate font-display text-[2.6rem] font-bold leading-none tracking-tight tabular-nums">
             {value}
           </p>
           <p className="mt-3 text-[11px] text-muted-foreground">{sub}</p>

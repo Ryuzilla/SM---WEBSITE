@@ -43,42 +43,43 @@
   }
 
   .dark {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 96%;
+    /* Navy-ink ground — tinted, not neutral grey, for depth under the accent */
+    --background: 222 30% 5%;
+    --foreground: 210 25% 96%;
 
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 96%;
+    --card: 222 24% 8%;
+    --card-foreground: 210 25% 96%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 222 24% 9%;
+    --popover-foreground: 210 25% 96%;
 
-    /* Navy blue — the signature editorial accent */
-    --primary: 220 85% 58%;
-    --primary-foreground: 0 0% 98%;
+    /* Navy blue — the single signature accent */
+    --primary: 220 85% 60%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 11%;
-    --secondary-foreground: 0 0% 96%;
+    --secondary: 222 18% 13%;
+    --secondary-foreground: 210 25% 96%;
 
-    --muted: 0 0% 11%;
-    --muted-foreground: 0 0% 52%;
+    --muted: 222 18% 13%;
+    --muted-foreground: 220 14% 60%;
 
-    --accent: 0 0% 14%;
-    --accent-foreground: 0 0% 96%;
+    --accent: 222 20% 16%;
+    --accent-foreground: 210 25% 96%;
 
-    --destructive: 0 63% 48%;
-    --destructive-foreground: 0 0% 96%;
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 13%;
-    --input: 0 0% 14%;
-    --ring: 220 85% 58%;
+    --border: 222 16% 15%;
+    --input: 222 16% 16%;
+    --ring: 220 85% 60%;
 
-    --chart-1: 220 85% 58%;
+    --chart-1: 220 85% 60%;
     --chart-2: 160 84% 45%;
     --chart-3: 38 92% 52%;
     --chart-4: 199 89% 52%;
     --chart-5: 262 83% 65%;
 
-    --png-bg: #0a0a0a;
+    --png-bg: #0a0d16;
   }
 }
 
@@ -131,7 +132,7 @@
     @apply bg-background/80 backdrop-blur-xl;
   }
   .dark .glass {
-    background-color: hsl(0 0% 4% / 0.85);
+    background-color: hsl(222 30% 5% / 0.85);
   }
   /* Navy blue glow — for active/primary elements in dark mode */
   .glow-primary {
@@ -140,7 +141,7 @@
 
   /* Login brand panel — pure black with the editorial grid overlay. */
   .login-hero {
-    background-color: hsl(0 0% 4%);
+    background-color: hsl(222 30% 5%);
     background-image:
       linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
